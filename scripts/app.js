@@ -1,4 +1,5 @@
 import { APIKEY } from './environment.js'; 
+import {saveToFavorites,getFavorites,removeFromFavorites} from "./localStorage.js";
 
 //assigned values are for testing purposes only
 // let latitude ;
@@ -13,9 +14,6 @@ let currentTemp = document.getElementById("currentTemp");
 let currentMax= document.getElementById("currentMax");
 let currentMin = document. getElementById("currentMin");
 let currentIcon = document.getElementById("currentIcon");
-// forecast day1 
-
-
 
 
 async function getCoordinatesByLocationName(locationName){
@@ -112,3 +110,12 @@ searchIcon.addEventListener('click',function(){
     getCoordinatesByLocationName(locationName);
 })
 
+
+
+saveToFavorites("Manteca,CA");
+saveToFavorites("Liverpool,UK");
+
+saveToFavorites("New York,NY,US");
+saveToFavorites("Manila,PH");
+
+removeFromFavorites("Manteca,CA");
