@@ -14,14 +14,18 @@
   </head>
   <body>
     <div class="search-bar">
-      <p>Womp Womp Weather App</p>
-      <input type="text" id="searchInput" />
-      <i class="fa-solid fa-magnifying-glass" id="searchIcon"></i>
+      <div>
+        <h3>Womp Womp</h3>
+      <h3> Weather App</h3>
+      
+      </div>
+      <input type="text" id="searchInput" placeholder="ex. City,State(optional),Country" />
+      <i class="fa-solid fa-magnifying-glass searchglass" id="searchIcon"></i>
     </div>
     <div class="container">
       <div class="row border border-primary">
         <div class="col-4">
-          <img
+          <img class="img-fluid weatherIcon"
             src="./assets/sun-solid.svg"
             id="currentIcon"
             alt="Current Weather Icon"
@@ -41,73 +45,73 @@
     </div>
     <div class="forecast-block">
       <div class="forecast-card" id="forecast1">
-        <p id="forecast1Day">Day1 Forecast</p>
-        <img
+        <p id="forecast0Day">Day1 Forecast</p>
+        <img class="weatherIcon"
+          src="./assets/sun-solid.svg"
+          id="forecast0Icon"
+          alt="Forecast icon"
+        />
+        <p id="forecast0weather">Weather</p>
+        <div class="forecastminmax">
+          <p id="forecast0max">Max</p>
+          <p>/</p>
+          <p id="forecast0min">Min</p>
+        </div>
+      </div>
+      <div class="forecast-card" id="forecast2">
+        <p id="forecast1Day">Day2 Forecast</p>
+        <img class="weatherIcon"
           src="./assets/sun-solid.svg"
           id="forecast1Icon"
-          alt="Forecast1 icon"
+          alt="Forecast icon"
         />
         <p id="forecast1weather">Weather</p>
         <div class="forecastminmax">
           <p id="forecast1max">Max</p>
           <p>/</p>
-          <p class="forecast1min">Min</p>
+          <p id="forecast1min">Min</p>
         </div>
       </div>
-      <div class="forecast-card" id="forecast2">
-        <p id="forecas2Day">Day2 Forecast</p>
-        <img
+      <div class="forecast-card" id="forecast3">
+        <p id="forecast2Day">Day3 Forecast</p>
+        <img class="weatherIcon"
           src="./assets/sun-solid.svg"
           id="forecast2Icon"
-          alt="Forecast2 icon"
+          alt="Forecast icon"
         />
         <p id="forecast2weather">Weather</p>
         <div class="forecastminmax">
           <p id="forecast2max">Max</p>
           <p>/</p>
-          <p class="forecast2min">Min</p>
+          <p id="forecast2min">Min</p>
         </div>
       </div>
-      <div class="forecast-card" id="forecast3">
-        <p id="forecas3Day">Day3 Forecast</p>
-        <img
+      <div class="forecast-card" id="forecast4">
+        <p id="forecast3Day">Day4 Forecast</p>
+        <img class="weatherIcon"
           src="./assets/sun-solid.svg"
           id="forecast3Icon"
-          alt="Forecast3 icon"
+          alt="Forecast icon"
         />
         <p id="forecast3weather">Weather</p>
         <div class="forecastminmax">
           <p id="forecast3max">Max</p>
           <p>/</p>
-          <p class="forecast3min">Min</p>
+          <p id="forecast3min">Min</p>
         </div>
       </div>
-      <div class="forecast-card" id="forecast4">
-        <p id="forecas4Day">Day4 Forecast</p>
-        <img
+      <div class="forecast-card" id="forecast5">
+        <p id="forecast4Day">Day5 Forecast</p>
+        <img class="weatherIcon"
           src="./assets/sun-solid.svg"
           id="forecast4Icon"
-          alt="Forecast4 icon"
+          alt="Forecast icon"
         />
         <p id="forecast4weather">Weather</p>
         <div class="forecastminmax">
           <p id="forecast4max">Max</p>
           <p>/</p>
-          <p class="forecast4min">Min</p>
-        </div>
-      </div>
-      <div class="forecast-card" id="forecast5">
-        <p id="forecas5Day">Day5 Forecast</p>
-        <img
-          src="./assets/sun-solid.svg"
-          id="forecast5Icon"
-          alt="Forecast5 icon"
-        />
-        <p id="forecast5weather">Weather</p>
-        <div class="forecastminmax">
-          <p id="forecast5max">Max</p>
-          <p>/</p>
-          <p class="forecast5min">Min</p>
+          <p id="forecast4min">Min</p>
         </div>
       </div>
     </div>

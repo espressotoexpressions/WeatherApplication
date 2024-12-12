@@ -1,17 +1,24 @@
 .search-bar{
     display:flex;
     justify-content: space-between ;
+    align-items: center;
 }
 .search-bar > input{
     width: 50%;
+
+}
+.searchglass{
+    font-size: 3em;
+    text-align: center;
 }
 
 
 .forecast-card{
 border: 1px solid black;
-}
-.forecast-card>img{
-    width: 50px;
+display:flex;
+flex-direction: column;
+justify-content: center;
+align-items: center;
 }
 
 .forecastminmax{
@@ -25,3 +32,8 @@ border: 1px solid black;
 
     justify-content: space-between;
 }
+.weatherIcon{
+    filter: grayscale(100%);
+    width: 100%;
+}
+
