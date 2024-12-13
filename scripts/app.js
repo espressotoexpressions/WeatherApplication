@@ -17,24 +17,35 @@ let currentIcon = document.getElementById("currentIcon");
 let favoritesLink=document.getElementById("favoritesLink");
 let favoritesDropDownList=document.getElementById("favoritesDropDownList");
 let previousDropDownList = document.getElementById("previousDropDownList");
+let addFavoriteIcon = document.getElementById("addFavoriteIcon");
+let removeFavoriteIcon = document.getElementById("removeFavoriteIcon");
+let loadMoreLink =document.getElementById("loadMoreLink");
 
 
 async function getCoordinatesByLocationName(locationName){
     const promise = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${locationName}&limit=5&appid=${APIKEY}`);
     const data= await promise.json(); // transforms it to a json format
-    console.log(`DATA get coordinates` +JSON.stringify(data));
-
     
     if (data.length>0)
         {
-            let cityName =`${data[0].name}, ${data[0].state}, ${ data[0].country}`;
+       
+            let cityName =`${data[0].name}`;
+           
+            //check if there is state
+            if (("state" in data[0])) {
+            
+                cityName += `, ${data[0].state}`;
+            }
+            cityName += `, ${data[0].country}`;
             currentCityName.innerText=cityName;
             getCurrentWeatherData(data);
             get5DayForecastData(data);
+            saveToPrevious(cityName);
             
         }
         else {
             alert("No city found.");
+     
         }
   
   }
@@ -45,10 +56,10 @@ const data= await promise.json(); // transforms it to a json format
 
 //icon
 let iconCode = data.weather[0].icon; // accesss first weather condition as it is the primary if multiple weather condition is returned
-console.log(iconCode+ "ICONCODE for current");
+
 
 currentIcon.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
-console.log(currentIcon.src);
+
 // Access the Unix timestamp from the 'dt' field
 const timestamp = data.dt;
 
@@ -64,8 +75,27 @@ currentTemp.innerText=data.weather[0].description;
    currentMax.innerText=`${data.main.temp_max}°F`;
    currentMin.innerText=`${data.main.temp_min}°F`;
 
-   console.log("CURR WEATHER"+JSON.stringify(data.weather[0].description));
-   console.log(`CURRENT DATA`+ JSON.stringify(data));
+//    console.log("CURR WEATHER"+JSON.stringify(data.weather[0].description));
+//    console.log(`CURRENT DATA`+ JSON.stringify(data));
+
+   //update favorites icon 
+   let favoritesArr= getFavorites();
+   if (favoritesArr.includes(currentCityName.innerText))
+    {
+        addFavoriteIcon.classList.remove("active");
+        addFavoriteIcon.classList.add("inactive");
+
+        removeFavoriteIcon.classList.remove("inactive");
+        removeFavoriteIcon.classList.add("active");
+    }
+    else{ //if it does not exist as favorite 
+        removeFavoriteIcon.classList.remove("active");
+        removeFavoriteIcon.classList.add("inactive");
+    
+        //add  add fav icon
+        addFavoriteIcon.classList.remove("inactive");
+        addFavoriteIcon.classList.add("active");
+    }
 
  }
 
@@ -73,8 +103,7 @@ currentTemp.innerText=data.weather[0].description;
   
    const promise = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${coordinatesData[0].lat}&lon=${coordinatesData[0].lon}&appid=${APIKEY}&units=imperial`);
    const data= await promise.json(); // transforms it to a json format
-   console.log(`forecast DATA`+ JSON.stringify(data));
-
+  
    //forecast data population in UI
    for (let i=0; i<5;i++)// because we only want the top 5 entries of the returned json data
     {
@@ -90,13 +119,12 @@ currentTemp.innerText=data.weather[0].description;
         let forecastWeatherElement = document.getElementById(forecastWeatherName.toString());
         let forecastMaxElement = document.getElementById(forecastMaxName.toString());
         let forecastMinElement = document.getElementById(forecastMinName.toString());
-        console.log(varDayName+ iconName + forecastWeatherName + forecastMaxName +forecastMinName);
-        console.log("VARIABLE" + data.list[i].main.temp);
+     
         forecastDayElement.innerText = data.list[i].dt_txt;
         
         //icon mapping from weather api
         let iconCode = data.list[i].weather[0].icon; // accesss first weather condition as it is the primary if multiple weather condition is returned
-        console.log(iconCode+ "ICONCODE"+i);
+    
         forecastIconElement.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
         
         forecastWeatherElement.innerText =data.list[i].weather[0].description;
@@ -112,7 +140,7 @@ favoritesLink.addEventListener('click', function(){
 
     favoritesDropDownList.innerHTML=""; //clears the html so that it will not create duplicates
     let favoritesArr= getFavorites();
-
+    favoritesArr.reverse();
     // caps the dropdown display items to max of 5
     let displayLength = favoritesArr.length;
     if (displayLength>5)
@@ -123,47 +151,47 @@ favoritesLink.addEventListener('click', function(){
    for (let i=0; i<displayLength ;i++) // displays items on the drop down list
         {
         //creates an element on the fly for each item on the list of favoritesArr
-        const favoriteItem=document.createElement('h3');
-        favoriteItem.innerText=favoritesArr[i];
-        favoritesDropDownList.appendChild (favoriteItem);
+            const favoriteItem=document.createElement('li');
+            favoriteItem.innerText=favoritesArr[i];
+            favoritesDropDownList.appendChild (favoriteItem);
 
-        // Assign a unique ID for each element using city/location names
-        // favoriteItem.id =favoritesArr[i];
+            // Assign a unique ID for each element using city/location names
+            // favoriteItem.id =favoritesArr[i];
 
-        // let favoriteItemElement = document.getElementById(`${favoritesArr[i]}`);
-        // console.log(favoriteItemElement+ "ITEM ELEMENT");
+            // let favoriteItemElement = document.getElementById(`${favoritesArr[i]}`);
+         
 
-        //creates an event listener for each item in the list
-        console.log(favoritesDropDownList);
-        favoriteItem.addEventListener('click',function(){
+            //creates an event listener for each item in the list
+     
+            favoriteItem.addEventListener('click',function(){
+                getCoordinatesByLocationName(favoritesArr[i]);
             
-            getCoordinatesByLocationName(favoritesArr[i]);
-        
-        });
-        
-        // if (favoritesArr.length>5)
-        //     {
-        //     const loadMoreItem=document.createElement('h3');
-        //     loadMore.innerText=favoritesArr[i];
-        //     favoritesDropDownList.appendChild (favoriteItem);
-        //     }
+            });
+           
+       
 
-    }
-    //if favorites list is more than 5 have a link to load more
-   
-    if (favoritesArr.length==0) 
-        {
-            const errorItem=document.createElement('h3');
-            errorItem.innerText="No favorite city added yet.";
-            favoritesDropDownList.appendChild(errorItem);
         }
-})
+        // display load more link and add it on the list
+        if (favoritesArr.length>5){
+            const loadItem =document.createElement('li');
+            loadItem.innerText="Load More";
+            favoritesDropDownList.appendChild (loadItem);
+
+            loadItem.addEventListener (`click`,function(){
+                getFavorites();
+                //displat complete favorites list
+            })
+        }
 
 
-searchIcon.addEventListener('click',function(){
+
+});
+
+
+searchIcon.addEventListener('click',async function(){
 
     let locationName = searchInput.value ;
-    getCoordinatesByLocationName(locationName);
+     getCoordinatesByLocationName(locationName);
     searchInput.value=""; //clear out this field after displaying the current value
 })
 
@@ -173,8 +201,8 @@ searchInput.addEventListener('click',function(){
     previousDropDownList.innerHTML="";
 
     let previousArr= getPrevious();
-    console.log("PREVIOUS" + previousArr);
 
+    previousArr.reverse();
     // caps the dropdown display items to max of 10
     let displayLength = previousArr.length;
     if (displayLength>10)
@@ -190,7 +218,7 @@ searchInput.addEventListener('click',function(){
             previousDropDownList.appendChild (previousItem);
 
 
-            console.log(previousDropDownList);
+   
             previousItem.addEventListener('click',function(){
                 
                 getCoordinatesByLocationName(previousArr[i]);
@@ -215,3 +243,23 @@ searchInput.addEventListener('click',function(){
         }
 });
 
+addFavoriteIcon.addEventListener('click',function(){
+    saveToFavorites(currentCityName.innerText);
+    //hide add fav icon
+    addFavoriteIcon.classList.remove("active");
+    addFavoriteIcon.classList.add("inactive");
+
+    //show remove icon
+    removeFavoriteIcon.classList.remove("inactive");
+    removeFavoriteIcon.classList.add("active");
+});
+removeFavoriteIcon.addEventListener(`click`,function(){
+    removeFromFavorites(currentCityName.innerText)
+    //hide remove icon
+    removeFavoriteIcon.classList.remove("active");
+    removeFavoriteIcon.classList.add("inactive");
+
+    //add  add fav icon
+    addFavoriteIcon.classList.remove("inactive");
+    addFavoriteIcon.classList.add("active");
+});

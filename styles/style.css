@@ -36,3 +36,19 @@ align-items: center;
     width: 100%;
 }
 
+.dropdown-menu li{
+    font-size: 1.5rem;;
+}
+.dropdown-menu li:hover{
+    cursor: pointer;
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.inactive{
+    display:none !important;
+}
+
+.active{
+    display:block !important;
+}
