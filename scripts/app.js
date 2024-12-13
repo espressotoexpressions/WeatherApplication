@@ -1,5 +1,5 @@
 import { APIKEY } from './environment.js'; 
-import {saveToFavorites,getFavorites,removeFromFavorites} from "./localStorage.js";
+import {saveToFavorites,getFavorites,removeFromFavorites,saveToPrevious,getPrevious} from "./localStorage.js";
 
 //assigned values are for testing purposes only
 // let latitude ;
@@ -14,6 +14,9 @@ let currentTemp = document.getElementById("currentTemp");
 let currentMax= document.getElementById("currentMax");
 let currentMin = document. getElementById("currentMin");
 let currentIcon = document.getElementById("currentIcon");
+let favoritesLink=document.getElementById("favoritesLink");
+let favoritesDropDownList=document.getElementById("favoritesDropDownList");
+let previousDropDownList = document.getElementById("previousDropDownList");
 
 
 async function getCoordinatesByLocationName(locationName){
@@ -33,7 +36,7 @@ async function getCoordinatesByLocationName(locationName){
         else {
             alert("No city found.");
         }
-    //return data;
+  
   }
 
 async function getCurrentWeatherData(coordinatesData){
@@ -96,7 +99,7 @@ currentTemp.innerText=data.weather[0].description;
         console.log(iconCode+ "ICONCODE"+i);
         forecastIconElement.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
         
-        forecastWeatherElement.innerText =data.list[i].main.temp;
+        forecastWeatherElement.innerText =data.list[i].weather[0].description;
         forecastMaxElement.innerText=`${data.list[i].main.temp_max}°F`;
         forecastMinElement.innerText=`${data.list[i].main.temp_min}°F`;
     }
@@ -104,18 +107,111 @@ currentTemp.innerText=data.weather[0].description;
  }
  
 
+//creates element on the fly to display on the favorites drop down list after clicking favorites link
+favoritesLink.addEventListener('click', function(){
 
-searchIcon.addEventListener('click',function(){
-    let locationName = searchInput.value ;
-    getCoordinatesByLocationName(locationName);
+    favoritesDropDownList.innerHTML=""; //clears the html so that it will not create duplicates
+    let favoritesArr= getFavorites();
+
+    // caps the dropdown display items to max of 5
+    let displayLength = favoritesArr.length;
+    if (displayLength>5)
+        {
+            displayLength=5;
+        }
+
+   for (let i=0; i<displayLength ;i++) // displays items on the drop down list
+        {
+        //creates an element on the fly for each item on the list of favoritesArr
+        const favoriteItem=document.createElement('h3');
+        favoriteItem.innerText=favoritesArr[i];
+        favoritesDropDownList.appendChild (favoriteItem);
+
+        // Assign a unique ID for each element using city/location names
+        // favoriteItem.id =favoritesArr[i];
+
+        // let favoriteItemElement = document.getElementById(`${favoritesArr[i]}`);
+        // console.log(favoriteItemElement+ "ITEM ELEMENT");
+
+        //creates an event listener for each item in the list
+        console.log(favoritesDropDownList);
+        favoriteItem.addEventListener('click',function(){
+            
+            getCoordinatesByLocationName(favoritesArr[i]);
+        
+        });
+        
+        // if (favoritesArr.length>5)
+        //     {
+        //     const loadMoreItem=document.createElement('h3');
+        //     loadMore.innerText=favoritesArr[i];
+        //     favoritesDropDownList.appendChild (favoriteItem);
+        //     }
+
+    }
+    //if favorites list is more than 5 have a link to load more
+   
+    if (favoritesArr.length==0) 
+        {
+            const errorItem=document.createElement('h3');
+            errorItem.innerText="No favorite city added yet.";
+            favoritesDropDownList.appendChild(errorItem);
+        }
 })
 
 
+searchIcon.addEventListener('click',function(){
 
-saveToFavorites("Manteca,CA");
-saveToFavorites("Liverpool,UK");
+    let locationName = searchInput.value ;
+    getCoordinatesByLocationName(locationName);
+    searchInput.value=""; //clear out this field after displaying the current value
+})
 
-saveToFavorites("New York,NY,US");
-saveToFavorites("Manila,PH");
 
-removeFromFavorites("Manteca,CA");
+//show previous list when search Input field is clicked
+searchInput.addEventListener('click',function(){
+    previousDropDownList.innerHTML="";
+
+    let previousArr= getPrevious();
+    console.log("PREVIOUS" + previousArr);
+
+    // caps the dropdown display items to max of 10
+    let displayLength = previousArr.length;
+    if (displayLength>10)
+    {
+        displayLength=10;
+     }
+
+     for (let i=0; i<displayLength ;i++) // displays items on the previous drop down list
+        {
+        //creates an element on the fly for each item on the list of favoritesArr
+            const previousItem=document.createElement('li');
+            previousItem.innerText=previousArr[i];
+            previousDropDownList.appendChild (previousItem);
+
+
+            console.log(previousDropDownList);
+            previousItem.addEventListener('click',function(){
+                
+                getCoordinatesByLocationName(previousArr[i]);
+            
+            });
+        
+        // if (favoritesArr.length>5)
+        //     {
+        //     const loadMoreItem=document.createElement('h3');
+        //     loadMore.innerText=favoritesArr[i];
+        //     favoritesDropDownList.appendChild (favoriteItem);
+        //     }
+
+        }   
+     
+
+     if (displayLength==0) 
+        {
+            const errorItem=document.createElement('li');
+            errorItem.innerText="No previous city searched yet.";
+            favoritesDropDownList.appendChild(errorItem);
+        }
+});
+

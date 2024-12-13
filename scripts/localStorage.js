@@ -14,6 +14,22 @@ function saveToFavorites(cityName) {
     localStorage.setItem('CityNames', JSON.stringify(cityArr));
 
 }
+function saveToPrevious(previousCity) {
+    //get the current values that are saved into local storage
+  
+    let previousArr = getPrevious();
+
+    //add new name into our cityArr array
+    if (!previousArr.includes(previousCity)) {
+        previousArr.push(previousCity);
+    }
+    
+
+    //save updated array to local storage
+    //JSON.stringify: Converts the array (or object) into a JSON string that can be stored in local storage.
+    localStorage.setItem('PreviousCities', JSON.stringify(previousArr));
+
+}
 
 
 function getFavorites(){
@@ -26,6 +42,17 @@ function getFavorites(){
     }
     //JSON.parse: Converts the JSON string back into an array (or object) so you can work with it.
     return JSON.parse(favoritesData);
+}
+function getPrevious(){
+    // get all of the values that are stored in cityArr in local storage
+    let previousCitiesData = localStorage.getItem('PreviousCities');
+
+
+    if (previousCitiesData == null) {
+        return [];
+    }
+    //JSON.parse: Converts the JSON string back into an array (or object) so you can work with it.
+    return JSON.parse(previousCitiesData);
 }
 
 function removeFromFavorites(cityName){
@@ -46,4 +73,4 @@ function removeFromFavorites(cityName){
 
 
 
-export{saveToFavorites, getFavorites,removeFromFavorites}
+export{saveToFavorites, getFavorites,removeFromFavorites,saveToPrevious,getPrevious}

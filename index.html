@@ -19,8 +19,34 @@
       <h3> Weather App</h3>
       
       </div>
-      <input type="text" id="searchInput" placeholder="ex. City,State(optional),Country" />
-      <i class="fa-solid fa-magnifying-glass searchglass" id="searchIcon"></i>
+      <!-- <input type="text" id="searchInput" placeholder="ex. City,State(optional),Country" /> -->
+     
+
+      <div class="dropdown d-flex w-100">
+        <input 
+            type="text" 
+            class="form-control dropdown-toggle w-100" 
+            id="searchInput" 
+            placeholder="ex. City,State(optional),Country" 
+            data-bs-toggle="dropdown" 
+            aria-expanded="false"
+        />
+        <ul class="dropdown-menu" id="previousDropDownList" aria-labelledby="dropdownInput">
+            <li><a class="dropdown-item" href="#">No previous city searched yet</a></li>
+        </ul>
+        <i class="fa-solid fa-magnifying-glass searchglass" id="searchIcon"></i>
+    </div>
+
+      <h3 class="nav-item dropdown" id="favoritesLink">
+        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+          aria-expanded="false">
+          Favorites
+        </a>
+        <ul class="dropdown-menu border border-light" id="favoritesDropDownList">
+          <h3><a class="dropdown-item" >No Favorite City added yet</a></h3>
+        </ul>
+      </h3>
+      <i class="fa-regular fa-bookmark" id="addFavoriteIcon"></i>
     </div>
     <div class="container">
       <div class="row border border-primary">
