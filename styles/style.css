@@ -98,7 +98,9 @@ background-color:rgba(255, 255, 255, 0.5); /*50% opacity*/
     border-radius:50px;
 }
 #favoriteSection{
+    padding: 1rem 1rem;
     background-color:rgba(255, 255, 255, 0.5); /*50% opacity*/
+    border-radius: 20px;
  
 }
 #favoriteitemsSection{
