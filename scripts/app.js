@@ -1,9 +1,6 @@
 import { APIKEY } from './environment.js'; 
 import {saveToFavorites,getFavorites,removeFromFavorites,saveToPrevious,getPrevious} from "./localStorage.js";
 
-//assigned values are for testing purposes only
-// let latitude ;
-// let longitude;
 
 let searchInput = document.getElementById("searchInput");
 let searchIcon = document.getElementById("searchIcon");
@@ -19,8 +16,17 @@ let favoritesDropDownList=document.getElementById("favoritesDropDownList");
 let previousDropDownList = document.getElementById("previousDropDownList");
 let addFavoriteIcon = document.getElementById("addFavoriteIcon");
 let removeFavoriteIcon = document.getElementById("removeFavoriteIcon");
-let loadMoreLink =document.getElementById("loadMoreLink");
 
+let favoriteSection =document.getElementById("favoriteSection");
+let currentSection = document.getElementById("currentSection");
+let forecastSection = document.getElementById("forecastSection");
+
+
+let previousArr= getPrevious();
+previousArr.reverse();
+
+let favoritesArr= getFavorites();
+favoritesArr.reverse();
 
 async function getCoordinatesByLocationName(locationName){
     const promise = await fetch(`http://api.openweathermap.org/geo/1.0/direct?q=${locationName}&limit=5&appid=${APIKEY}`);
@@ -38,8 +44,34 @@ async function getCoordinatesByLocationName(locationName){
             }
             cityName += `, ${data[0].country}`;
             currentCityName.innerText=cityName;
-            getCurrentWeatherData(data);
-            get5DayForecastData(data);
+            getCurrentWeatherData(data[0].lat, data[0].lon);
+            get5DayForecastData(data[0].lat, data[0].lon);
+            saveToPrevious(cityName);
+            
+        }
+        else {
+            alert("No city found. Please check if you have State indicated, if applicable.");
+     
+        }
+  
+  }
+  async function getCityNameByCoordinates(latitude,longitude){
+    const promise = await fetch(`https://api.openweathermap.org/geo/1.0/reverse?lat=${latitude}&lon=${longitude}&limit=1&appid=${APIKEY}`);
+    const data= await promise.json(); // transforms it to a json format
+    if (data.length>0)
+        {
+       
+            let cityName =`${data[0].name}`;
+           
+            //check if there is state
+            if (("state" in data[0])) {
+            
+                cityName += `, ${data[0].state}`;
+            }
+            cityName += `, ${data[0].country}`;
+            currentCityName.innerText=cityName;
+            getCurrentWeatherData(data[0].lat, data[0].lon);
+            get5DayForecastData(data[0].lat, data[0].lon);
             saveToPrevious(cityName);
             
         }
@@ -47,16 +79,14 @@ async function getCoordinatesByLocationName(locationName){
             alert("No city found.");
      
         }
-  
   }
 
-async function getCurrentWeatherData(coordinatesData){
-const promise = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${coordinatesData[0].lat}&lon=${coordinatesData[0].lon}&appid=${APIKEY}&units=imperial`); //for Farenheit units
+async function getCurrentWeatherData(latitude,longitude){
+const promise = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${APIKEY}&units=imperial`); //for Farenheit units
 const data= await promise.json(); // transforms it to a json format
 
 //icon
 let iconCode = data.weather[0].icon; // accesss first weather condition as it is the primary if multiple weather condition is returned
-
 
 currentIcon.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
 
@@ -64,19 +94,21 @@ currentIcon.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
 const timestamp = data.dt;
 
 // Convert the timestamp to a JavaScript Date object
-const date = new Date(timestamp * 1000); // Multiply by 1000 to convert from seconds to milliseconds
+const date = new Date(timestamp * 1000); 
 
 // Display the formatted date
-currentDate.innerText=date.toLocaleString(); // Output: A human-readable date
+currentDate.innerText=date.toLocaleString('en-US', {
+    weekday: 'long', // e.g., "Monday"
+    month: 'long',   // e.g., "December"
+    day: 'numeric'   // e.g., "13"
+}); 
 
 currentTemp.innerText=data.weather[0].description;
 
    currentWeather.innerText=`${data.main.temp}°F`;
-   currentMax.innerText=`${data.main.temp_max}°F`;
-   currentMin.innerText=`${data.main.temp_min}°F`;
+   currentMax.innerText=`High: ${data.main.temp_max}°F`;
+   currentMin.innerText=`Low: ${data.main.temp_min}°F`;
 
-//    console.log("CURR WEATHER"+JSON.stringify(data.weather[0].description));
-//    console.log(`CURRENT DATA`+ JSON.stringify(data));
 
    //update favorites icon 
    let favoritesArr= getFavorites();
@@ -99,9 +131,9 @@ currentTemp.innerText=data.weather[0].description;
 
  }
 
- async function get5DayForecastData(coordinatesData){
+ async function get5DayForecastData(latitude,longitude){
   
-   const promise = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${coordinatesData[0].lat}&lon=${coordinatesData[0].lon}&appid=${APIKEY}&units=imperial`);
+   const promise = await fetch(`https://api.openweathermap.org/data/2.5/forecast?lat=${latitude}&lon=${longitude}&appid=${APIKEY}&units=imperial`);
    const data= await promise.json(); // transforms it to a json format
   
    //forecast data population in UI
@@ -120,16 +152,23 @@ currentTemp.innerText=data.weather[0].description;
         let forecastMaxElement = document.getElementById(forecastMaxName.toString());
         let forecastMinElement = document.getElementById(forecastMinName.toString());
      
-        forecastDayElement.innerText = data.list[i].dt_txt;
-        
-        //icon mapping from weather api
-        let iconCode = data.list[i].weather[0].icon; // accesss first weather condition as it is the primary if multiple weather condition is returned
-    
+      
+         const timestampforecast= data.list[i*8].dt; // multplied index to 8 to account for each day because there are 8 entries of 3 hr intervals each day
+        // Convert the timestamp to a JavaScript Date object
+        const date = new Date(timestampforecast * 1000); 
+
+        // Display the formatted date to show Day only
+        forecastDayElement.innerText=(date.toLocaleString('en-US', {
+            weekday: 'short'
+        })).toUpperCase(); 
+                
+      
+;        //icon mapping from weather api
+        let iconCode = data.list[i*8].weather[0].icon; // accesss first weather condition as it is the primary if multiple weather condition is returned
         forecastIconElement.src = `https://openweathermap.org/img/wn/${iconCode}@2x.png`;
-        
-        forecastWeatherElement.innerText =data.list[i].weather[0].description;
-        forecastMaxElement.innerText=`${data.list[i].main.temp_max}°F`;
-        forecastMinElement.innerText=`${data.list[i].main.temp_min}°F`;
+        forecastWeatherElement.innerText =data.list[i*8].weather[0].description;
+        forecastMaxElement.innerText=`${data.list[i*8].main.temp_max}°F`;
+        forecastMinElement.innerText=`${data.list[i*8].main.temp_min}°F`;
     }
 
  }
@@ -137,12 +176,21 @@ currentTemp.innerText=data.weather[0].description;
 
 //creates element on the fly to display on the favorites drop down list after clicking favorites link
 favoritesLink.addEventListener('click', function(){
-
-    favoritesDropDownList.innerHTML=""; //clears the html so that it will not create duplicates
-    let favoritesArr= getFavorites();
+    favoritesArr=getFavorites();
     favoritesArr.reverse();
+    favoritesDropDownList.innerHTML=""; //clears the html so that it will not create duplicates
+  
     // caps the dropdown display items to max of 5
     let displayLength = favoritesArr.length;
+
+    //displays a label when no favorites is added yet
+    if (displayLength==0) 
+        {
+            const errorItem=document.createElement('li');
+            errorItem.innerText="No favorite city added yet.";
+            favoritesDropDownList.appendChild(errorItem);
+        }
+
     if (displayLength>5)
         {
             displayLength=5;
@@ -155,38 +203,82 @@ favoritesLink.addEventListener('click', function(){
             favoriteItem.innerText=favoritesArr[i];
             favoritesDropDownList.appendChild (favoriteItem);
 
-            // Assign a unique ID for each element using city/location names
-            // favoriteItem.id =favoritesArr[i];
 
-            // let favoriteItemElement = document.getElementById(`${favoritesArr[i]}`);
-         
-
-            //creates an event listener for each item in the list
-     
+            //creates an event listener for each item in the list     
             favoriteItem.addEventListener('click',function(){
                 getCoordinatesByLocationName(favoritesArr[i]);
             
-            });
-           
-       
+            });       
 
         }
         // display load more link and add it on the list
         if (favoritesArr.length>5){
             const loadItem =document.createElement('li');
-            loadItem.innerText="Load More";
+            loadItem.innerText="Load All Favorites";
             favoritesDropDownList.appendChild (loadItem);
 
             loadItem.addEventListener (`click`,function(){
-                getFavorites();
-                //displat complete favorites list
-            })
+                favoriteSection.classList.remove("inactive");
+                currentSection.classList.add("inactive");
+                forecastSection.classList.add("inactive");
+
+                for (let j=0; j<favoritesArr.length ;j++) // displays items 
+                {
+                //creates an element on the fly for each item on the list of favoritesArr
+                    const favoriteitemsSection =document.getElementById("favoriteitemsSection"); // the whole div for ul
+
+                    const favoriteSectionItem=document.createElement('li'); // favorite item  create
+                    favoriteSectionItem.classList.add("favCityItem");
+                    
+                    // Create a <span> for the text to separate it from the icon
+                    const favoriteText = document.createElement('span');
+                    favoriteText.innerText = `${[j+1]}. ${favoritesArr[j]}`;
+                    favoriteSectionItem.appendChild(favoriteText); // Add the text to the <li>
+
+                    
+                    //create an <i> for the icon
+                    const favoriteItemIcon = document.createElement('i');
+                    favoriteItemIcon.classList.add("fa-solid", "fa-bookmark");
+                    favoriteSectionItem.appendChild (favoriteItemIcon);
+                    
+
+                    const removeFavoriteItemIcon = document.createElement('i');
+                    removeFavoriteItemIcon.classList.add("fa-regular", "fa-bookmark","inactive");
+                  
+                    favoriteSectionItem.appendChild (removeFavoriteItemIcon);
+                    
+                    // Append the <li> to the parent container
+                    favoriteitemsSection.appendChild (favoriteSectionItem);
+
+                    //creates an event listener for each item in the list     
+                    favoriteText.addEventListener('click',function(){
+                        console.log("ENTER EVENT"+favoritesArr[j]);
+                        getCoordinatesByLocationName(favoritesArr[j]);
+                        favoriteSection.classList.add("inactive");
+                        currentSection.classList.remove("inactive");
+                        forecastSection.classList.remove("inactive");
+                    
+                    });       
+
+                    //create an event listener for every bookmark icon
+                    favoriteItemIcon.addEventListener( `click`,function(){
+                        removeFromFavorites(favoritesArr[j]);
+                        console.log("ENTER remove");
+                        favoriteItemIcon.classList.add("inactive");
+                        removeFavoriteItemIcon.classList.remove("inactive");
+                    
+                    });
+
+                 }
+
+            });
         }
+
+     
 
 
 
 });
-
 
 searchIcon.addEventListener('click',async function(){
 
@@ -198,13 +290,15 @@ searchIcon.addEventListener('click',async function(){
 
 //show previous list when search Input field is clicked
 searchInput.addEventListener('click',function(){
+    previousArr= getPrevious();
+    previousArr.reverse();
+
     previousDropDownList.innerHTML="";
 
-    let previousArr= getPrevious();
 
-    previousArr.reverse();
-    // caps the dropdown display items to max of 10
     let displayLength = previousArr.length;
+    
+    // caps the dropdown display items to max of 10
     if (displayLength>10)
     {
         displayLength=10;
@@ -216,30 +310,22 @@ searchInput.addEventListener('click',function(){
             const previousItem=document.createElement('li');
             previousItem.innerText=previousArr[i];
             previousDropDownList.appendChild (previousItem);
-
-
-   
             previousItem.addEventListener('click',function(){
-                
                 getCoordinatesByLocationName(previousArr[i]);
             
             });
         
-        // if (favoritesArr.length>5)
-        //     {
-        //     const loadMoreItem=document.createElement('h3');
-        //     loadMore.innerText=favoritesArr[i];
-        //     favoritesDropDownList.appendChild (favoriteItem);
-        //     }
+       
 
         }   
      
 
      if (displayLength==0) 
         {
+         
             const errorItem=document.createElement('li');
             errorItem.innerText="No previous city searched yet.";
-            favoritesDropDownList.appendChild(errorItem);
+            previousDropDownList.appendChild(errorItem);
         }
 });
 
@@ -252,6 +338,8 @@ addFavoriteIcon.addEventListener('click',function(){
     //show remove icon
     removeFavoriteIcon.classList.remove("inactive");
     removeFavoriteIcon.classList.add("active");
+
+  
 });
 removeFavoriteIcon.addEventListener(`click`,function(){
     removeFromFavorites(currentCityName.innerText)
@@ -262,4 +350,33 @@ removeFavoriteIcon.addEventListener(`click`,function(){
     //add  add fav icon
     addFavoriteIcon.classList.remove("inactive");
     addFavoriteIcon.classList.add("active");
+
 });
+
+
+//get geolocation if localstorage does not exist upon page load else display last search
+if (previousArr.length==0){ 
+        navigator.geolocation.getCurrentPosition(
+            success, 
+            error 
+        );
+        //if user accepts geolocation 
+        function success(position) {
+            getCityNameByCoordinates(position.coords.latitude,position.coords.longitude);
+        }
+
+    //if user denied geo location load stockton by default
+        function error(err) {
+            console.error(`Error: ${err.message}`);
+            getCoordinatesByLocationName("Stockton,CA,US");
+        }
+    }
+//display last city search upon page load
+else {
+    getCoordinatesByLocationName(previousArr[0]);
+    }
+
+
+
+
+
